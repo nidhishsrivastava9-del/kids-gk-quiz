@@ -175,14 +175,42 @@ quizkids/
 
 ## 🏗️ Production Build & Deployment
 
-### Build the frontend:
-```bash
-npm run build
-```
-The optimized production bundle will be generated in `client/dist/`.
+### Deploy on Netlify (Fullstack React + Serverless Express):
 
-### Run production server:
+QuizKids is configured out-of-the-box for Netlify with serverless functions and SPA client-side routing.
+
+#### Option 1: One-Click Git Deployment (Recommended)
+1. Push your repository to **GitHub**, **GitLab**, or **Bitbucket**.
+2. Go to [Netlify](https://app.netlify.com/) and click **"Add new site"** -> **"Import an existing project"**.
+3. Select your repository.
+4. Netlify will automatically detect [`netlify.toml`](file:///f:/SSD_Migration_Backup/Documents/kids/netlify.toml):
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `client/dist`
+   - **Functions Directory**: `netlify/functions`
+5. *(Optional)* In **Site Configuration > Environment Variables**, add:
+   - `JWT_SECRET`: Any secure random string (default fallback is built-in)
+   - `MONGODB_URI`: *(Optional)* Your MongoDB Atlas connection URI (if omitted, QuizKids runs in high-speed in-memory store)
+6. Click **Deploy Site**! 🚀
+
+#### Option 2: Netlify CLI
 ```bash
+# Install Netlify CLI globally or run with npx
+npm install -g netlify-cli
+
+# Login and deploy
+netlify login
+netlify deploy --build --prod
+```
+
+---
+
+### Local Production Build:
+
+```bash
+# Build the optimized client bundle:
+npm run build
+
+# Preview production build locally:
 npm run start
 ```
 

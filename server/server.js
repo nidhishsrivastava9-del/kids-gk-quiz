@@ -60,7 +60,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && !process.env.NETLIFY && require.main === module) {
   app.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`🚀 QuizKids Server is running at http://localhost:${PORT}`);
