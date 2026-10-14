@@ -24,3 +24,6 @@ logs
 # Vercel
 .vercel
 
+# Backups
+kids_backup/
+
