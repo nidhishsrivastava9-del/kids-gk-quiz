@@ -23,6 +23,7 @@ export const QuizProvider = ({ children }) => {
   // Instant feedback state
   const [selectedOption, setSelectedOption] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isCurrentCorrect, setIsCurrentCorrect] = useState(null);
   const [revealedExplanation, setRevealedExplanation] = useState(null);
   const [correctOptionRevealed, setCorrectOptionRevealed] = useState(null);
@@ -65,6 +66,7 @@ export const QuizProvider = ({ children }) => {
     setHighestStreak(0);
     setSelectedOption(null);
     setIsAnswered(false);
+    setIsVerifying(false);
     setIsCurrentCorrect(null);
     setRevealedExplanation(null);
     setCorrectOptionRevealed(null);
@@ -94,31 +96,38 @@ export const QuizProvider = ({ children }) => {
   };
 
   const checkAnswer = async () => {
-    if (!selectedOption || isAnswered) return;
+    if (!selectedOption || isAnswered || isVerifying) return;
 
     const currentQ = questions[currentIndex];
-    setIsAnswered(true);
+    if (!currentQ) return;
 
-    // Save answer
-    const newAnswers = [...userAnswers, { questionId: currentQ.id, selectedAnswer: selectedOption }];
-    setUserAnswers(newAnswers);
+    setIsVerifying(true);
 
     try {
-      // Get single question details for instant explanation
-      const qRes = await api.getQuestions({ search: currentQ.question });
-      let verifiedCorrect = '';
-      let explanation = '';
+      let verifiedCorrect = currentQ.correctAnswer;
+      let explanation = currentQ.explanation;
 
-      if (qRes && qRes.data && qRes.data.length > 0) {
-        const fullQ = qRes.data.find(q => q.id === currentQ.id || q._id === currentQ.id) || qRes.data[0];
-        verifiedCorrect = fullQ.correctAnswer;
-        explanation = fullQ.explanation;
+      // Fallback only if correctAnswer wasn't delivered in initial quiz payload
+      if (!verifiedCorrect) {
+        const qRes = await api.getQuestions({ search: currentQ.question });
+        if (qRes && qRes.data && qRes.data.length > 0) {
+          const fullQ = qRes.data.find(q => q.id === currentQ.id || q._id === currentQ.id) || qRes.data[0];
+          verifiedCorrect = fullQ.correctAnswer;
+          explanation = fullQ.explanation;
+        }
       }
 
       const isCorrect = (selectedOption || '').trim().toLowerCase() === (verifiedCorrect || '').trim().toLowerCase();
+
+      // Save answer
+      const newAnswers = [...userAnswers, { questionId: currentQ.id, selectedAnswer: selectedOption }];
+      setUserAnswers(newAnswers);
+
+      // Set all evaluated feedback states atomically
       setIsCurrentCorrect(isCorrect);
       setRevealedExplanation(explanation || "Great learning opportunity! Keep exploring!");
-      setCorrectOptionRevealed(verifiedCorrect);
+      setCorrectOptionRevealed(verifiedCorrect || selectedOption);
+      setIsAnswered(true);
 
       if (isCorrect) {
         const nextStreak = currentStreak + 1;
@@ -136,7 +145,12 @@ export const QuizProvider = ({ children }) => {
     } catch (e) {
       console.warn('Feedback verification fallback:', e);
       setIsCurrentCorrect(true);
+      setRevealedExplanation("Great effort! Keep exploring!");
+      setCorrectOptionRevealed(selectedOption);
+      setIsAnswered(true);
       playCorrect();
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -151,6 +165,7 @@ export const QuizProvider = ({ children }) => {
       setCurrentIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
+      setIsVerifying(false);
       setIsCurrentCorrect(null);
       setRevealedExplanation(null);
       setCorrectOptionRevealed(null);
@@ -233,6 +248,7 @@ export const QuizProvider = ({ children }) => {
       highestStreak,
       selectedOption,
       isAnswered,
+      isVerifying,
       isCurrentCorrect,
       revealedExplanation,
       correctOptionRevealed,

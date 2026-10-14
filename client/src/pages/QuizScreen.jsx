@@ -27,6 +27,7 @@ export const QuizScreen = () => {
     currentStreak,
     selectedOption,
     isAnswered,
+    isVerifying,
     isCurrentCorrect,
     revealedExplanation,
     correctOptionRevealed,
@@ -226,7 +227,7 @@ export const QuizScreen = () => {
               if (isOptionCorrect) {
                 buttonStyle = 'bg-emerald-100 border-3 border-emerald-500 text-emerald-950 shadow-bubbly-green scale-[1.01]';
                 badgeStyle = 'bg-emerald-500 text-white';
-              } else if (isSelected && !isCurrentCorrect) {
+              } else if (isSelected && isCurrentCorrect === false) {
                 buttonStyle = 'bg-rose-50 border-3 border-rose-400 text-rose-950 opacity-80';
                 badgeStyle = 'bg-rose-500 text-white';
               } else {
@@ -239,7 +240,7 @@ export const QuizScreen = () => {
               <button
                 key={idx}
                 type="button"
-                disabled={isAnswered}
+                disabled={isAnswered || isVerifying}
                 onClick={() => {
                   playClick();
                   handleSelectOption(option);
@@ -262,7 +263,7 @@ export const QuizScreen = () => {
         {/* =========================================
             INSTANT EDUCATIONAL FEEDBACK CARD
             ========================================= */}
-        {isAnswered && (
+        {isAnswered && isCurrentCorrect !== null && (
           <div className={`p-5 rounded-2xl border-3 animate-pop space-y-2 ${
             isCurrentCorrect
               ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
@@ -298,14 +299,14 @@ export const QuizScreen = () => {
           {!isAnswered ? (
             <button
               onClick={checkAnswer}
-              disabled={!selectedOption}
+              disabled={!selectedOption || isVerifying}
               className={`w-full sm:w-auto text-base sm:text-lg py-3.5 px-8 font-black rounded-2xl shadow-bubbly-primary transition-all ${
-                selectedOption
+                selectedOption && !isVerifying
                   ? 'btn-bubbly-primary'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
               }`}
             >
-              Check Answer ✨
+              {isVerifying ? 'Checking... ✨' : 'Check Answer ✨'}
             </button>
           ) : (
             <button

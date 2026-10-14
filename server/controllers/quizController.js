@@ -32,7 +32,7 @@ exports.generateQuiz = async (req, res) => {
       const shuffled = questions.sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, requestedCount);
 
-      // Mask correct answers & explanations from response, randomize choices
+      // Send sanitized questions with answers & explanations for seamless instant feedback
       const sanitized = selected.map(q => {
         const optionsShuffled = [...q.options].sort(() => 0.5 - Math.random());
         return {
@@ -41,6 +41,8 @@ exports.generateQuiz = async (req, res) => {
           category: q.category,
           difficulty: q.difficulty,
           options: optionsShuffled,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
           points: q.points || 10
         };
       });

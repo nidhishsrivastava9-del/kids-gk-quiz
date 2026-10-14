@@ -179,7 +179,7 @@ class MemoryStore {
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, Math.min(Number(count) || 10, shuffled.length));
 
-    // Shuffle options for each question
+    // Shuffle options for each question and provide answer info for instant feedback
     return selected.map(q => {
       const shuffledOptions = [...q.options].sort(() => 0.5 - Math.random());
       return {
@@ -188,6 +188,8 @@ class MemoryStore {
         category: q.category,
         difficulty: q.difficulty,
         options: shuffledOptions,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
         points: q.points || 10
       };
     });
